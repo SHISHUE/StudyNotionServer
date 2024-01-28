@@ -5,13 +5,13 @@ require("dotenv").config();
 exports.auth = async (req, res, next) => {
   try {
     console.log("BEFORE TOKEN EXTRACTION ");
+    console.log("After TOKEN EXTRACTION ", req.cookies, req.body, req.header); 
     // Token extraction
-    const token =
+    var token =
       req.cookies.token ||
       req.body.token ||
-      req.header('Authorization').replace('Bearer ', '');
+      req.header('Authorization')?.replace('Bearer ', ''); 
 
-    console.log("After TOKEN EXTRACTION ", token);
 
     // If token is missing
     if (!token) {
@@ -37,7 +37,8 @@ exports.auth = async (req, res, next) => {
   } catch (error) {
     return res.status(401).json({
       success: false,
-      message: "Something is not looking right while validating the token",
+      message: `Something is not looking right while validating the ${token}`,
+      error: error.message
     });
   }
 };

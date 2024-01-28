@@ -5,6 +5,10 @@ const {
   createCourse,
   showAllCourses,
   getCourseDetails,
+  editCourse,
+  getInstructorCourses,
+  deleteCourse,
+  getFullDetailsOfCourse
 } = require("../controller/Course");
 
 const {
@@ -38,25 +42,34 @@ const {
   isStudent,
 } = require("../middleware/auth");
 
+
+const {updateCourseProgress} = require("../controller/CourseProgress")
+
 router.post("/createCourse", auth, isInstructor, createCourse);
+router.post("/editCourse", auth, isInstructor, editCourse);
 router.post("/addSection", auth, isInstructor, createSection);
 router.post("/updateSection", auth, isInstructor, updateSection);
 router.delete("/deleteSection", auth, isInstructor, deleteSection);
+router.delete("/deleteCourse", auth, isInstructor, deleteCourse);
 
 router.post("/addSubSection", auth, isInstructor, createSubSection);
 router.post("/updateSubSection", auth, isInstructor, updateSubSection);
-router.post("/deleteSubSection", auth, isInstructor, deleteSubSection);
+router.delete("/deleteSubSection", auth, isInstructor, deleteSubSection);
 
 router.get("/getAllCourses", auth, isInstructor, showAllCourses);
-router.get("/getCoursesDetails", auth, isInstructor, getCourseDetails);
+router.post("/getCoursesDetails", getCourseDetails);
+router.get("/getInstructorCourses", auth, isInstructor, getInstructorCourses);
+router.post("/getAllCourseDetails", auth, isStudent, getFullDetailsOfCourse);
 
 router.post("/createCategory", auth, isAdmin, createCategory);
-router.get("/getCategoryPageDetails", categoryPageDetails);
+router.post("/getCategoryPageDetails", categoryPageDetails);
 router.get("/showAllCategory", showAllCategorys);
 
 // Rating and Review
 router.post("/createRating", auth, isStudent, createRating);
 router.get("/getAverageRating", getAverageRating);
 router.get("/getReviews", getAllRating);
+
+router.post("/updateCourseProgress", auth, isStudent, updateCourseProgress);
 
 module.exports = router;

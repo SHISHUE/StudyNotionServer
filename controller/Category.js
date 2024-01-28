@@ -1,3 +1,4 @@
+const { Mongoose } = require("mongoose");
 const Category = require("../models/Category");
 
 //create Category ka handler fnc
@@ -33,7 +34,10 @@ exports.createCategory = async (req, res) => {
 //getAll Categorys handler
 exports.showAllCategorys = async (req, res) => {
   try {
-    const allCategorys = await Category.find({}, { name: true, description: true });
+    const allCategorys = await Category.find(
+      {},
+      { name: true, description: true }
+    );
     console.log(allCategorys);
 
     return res.status(200).json({
@@ -49,39 +53,94 @@ exports.showAllCategorys = async (req, res) => {
   }
 };
 
+function getRandomInt(max) {
+  return Math.floor(Math.random() * Math.floor(max));
+}
+
+
 //categoryPageDetails
-exports.categoryPageDetails = async(req, res) => {
+exports.categoryPageDetails = async (req, res) => {
   try {
     //get category id
-    const {categoryId} = req.body;
+    const { categoryId } = req.body;
+
+    
+
     // get courses for specified category id
-    const selectedCategory = await Category.findById(categoryId).populate("courses").exec();
+    const selectedCategory = await Category.findById(categoryId)
+    .populate({
+      path: "courses",
+      match: { status: "published" },
+      populate: [
+        { path: "ratingAndReview" },
+        { path: "instructor" }
+        // Add more fields to populate if needed
+      ],
+    })
+    .exec();
     //validation
-    if(!selectedCategory) {
+    if (!selectedCategory) {
       return res.status(404).json({
         success: false,
-        message:"Data not found"
+        message: "Data not found",
       });
     }
-    //get course for defferent category
-    const diffrentCategories = await Category.find({
-      _id: {$ne: categoryId},
-    }).populate("courses").exec();
-    // get top 10 selling courses
+
+    if (selectedCategory.courses.length === 0) {
+      console.log("No courses found for the selected gategory.");
+      return res.status(404).json({
+        success: false,
+        message: "No courses found for the selected category",
+      });
+    }
+
+    const categoryExceptSelected = await Category.find({
+      _id: { $ne: categoryId },
+    });
+    let differentCategory = await Category.findOne(
+      categoryExceptSelected[getRandomInt(categoryExceptSelected.length)]._id
+    )
+      .populate({
+        path: "courses",
+        match: { status: "published" },
+        populate: {
+          path: "instructor",
+        },
+      })
+      .exec();
+    console.log();
+
+    const allCategorys = await Category.find()
+      .populate({
+        path: "courses",
+        match: { status: "published" },
+        populate: {
+          path: "instructor",
+        },
+      })
+      .exec();
+
+    const allCourses = allCategorys.flatMap((category) => category.courses);
+    const mostSellingCourses = allCourses
+      .sort((a, b) => b.sold - a.sold)
+      .slice(0, 10);
 
     // return response
     return res.status(200).json({
       success: true,
-      message:"All category",
+      message: "All category",
       data: {
         selectedCategory,
-        diffrentCategories
-      }
-    })
+        differentCategory,
+        mostSellingCourses,
+      },
+    });
   } catch (error) {
+    console.log(error);
     return res.status(500).json({
       success: false,
-      message:"not find category based courses. "
-    })
+      message: "Internal server error",
+      error: error.message,
+    });
   }
-}
+};

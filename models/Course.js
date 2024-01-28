@@ -21,8 +21,6 @@ const courseSchema = new mongoose.Schema({
    whatYouWillLearn: {
     type:String,
     required: true,
-    maxLength: 200,
-    minLength:30,
     trim: true,
    },
    courseContent: [{
@@ -64,7 +62,12 @@ const courseSchema = new mongoose.Schema({
    },
    status: {
     type: String,
-    enum: ["Draft", "Published"]
+    enum: ["draft", "published"],
+    default: "draft"
+   },
+   createdAt: {
+    type:Date,
+    default:Date.now,
    }
 
 

@@ -64,9 +64,11 @@ exports.createRating = async (req, res) => {
       data: ratingAndreview,
     });
   } catch (error) {
+    console.log("error", error.message)
     return res.status(500).json({
       success: false,
       message: "rating not created",
+      error: error.message
     });
   }
 };
@@ -122,7 +124,7 @@ exports.getAllRating = async (req, res) => {
       })
       .populate({
         path: "course",
-        select: "courseName",
+        select: "courseTitle",
       })
       .exec();
 

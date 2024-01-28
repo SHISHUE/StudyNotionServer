@@ -222,3 +222,48 @@ exports.getEnrolledCourses = async (req, res) => {
     });
   }
 };
+
+
+exports.instructorDashboard = async(req, res) => {
+  try {
+    
+    const courseDetails = await Course.find({instructor: req.user.id});
+
+    if(!courseDetails) {
+      return res.status(404).json({
+        success: false,
+        message:"Course not found"
+      })
+    }
+
+    const courseData = courseDetails.map((course) => {
+      const totalStudentEnrolled = course.studentEnrolled.length
+      const totalAmountGenerated = totalStudentEnrolled * course.price
+
+
+      // Create an new object with the additional field 
+      const courseDataWithStats = {
+        _id: course._id,
+        courseTitle: course.courseTitle,
+        courseDescription: course.courseDescription,
+        totalStudentEnrolled,
+        totalAmountGenerated
+      }
+      return courseDataWithStats;
+    })
+
+    res.status(200).json({
+      success: true,
+      message: "here is your needed data",
+      courses: courseData
+    });
+
+
+  } catch (error) {
+    console.log("Error: ",error.message)
+    return res.status(500).json({
+      success: false,
+      message: error.message
+    })
+  }
+}

@@ -173,10 +173,10 @@ if (!otpFetch || otp !== otpFetch.otp) {
 //login
 exports.login = async (req, res) => {
   try {
-    //email aur password fetch krenge
+    // Email and password fetching
     const { email, password } = req.body;
 
-    //email vailidtion krnge
+    // Email validation
     if (!email || !password) {
       return res.status(400).json({
         success: false,
@@ -184,32 +184,33 @@ exports.login = async (req, res) => {
       });
     }
 
-    //user verify
-    const userExistence = await User.findOne({email}).populate('additionalDetails').exec();
+    // User verification
+    const userExistence = await User.findOne({ email }).populate('additionalDetails').exec();
 
     if (!userExistence) {
       return res.status(401).json({
         success: false,
-        message: "Sign up kr le phale bhai. ",
+        message: "Sign up kr le phale bhai.",
       });
     }
 
-    //password match
-    if (await bcrypt.compare(password, userExistence.password)) { // Corrected variable name to userExistence
-      //password ko decode(JWT) krenge aur match krenge
+    // Password match
+    if (await bcrypt.compare(password, userExistence.password)) {
+      // Password decoding (JWT) and matching
       const secretKey = process.env.JWT_SECRET;
       const payload = {
-        email: userExistence.email, // Corrected variable name to userExistence
-        accountType: userExistence.accountType, // Corrected variable name to userExistence
-        id: userExistence._id, // Corrected variable name to userExistence
+        email: userExistence.email,
+        accountType: userExistence.accountType,
+        id: userExistence._id,
       };
 
-      const token = JWT.sign(payload, secretKey, { expiresIn: "2h" });
+      const token = JWT.sign(payload, secretKey, { expiresIn: "24h" });
 
-      userExistence.token = token; // Corrected variable name to userExistence
-      userExistence.password = undefined; // Corrected variable name to userExistence
+      // Update the user with the new token and remove the password
+      userExistence.token = token;
+      userExistence.password = undefined;
 
-      //create cookie and send response
+      // Create a cookie and send the response
       res
         .cookie("token", token, {
           expires: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
@@ -218,20 +219,21 @@ exports.login = async (req, res) => {
         .status(200)
         .json({
           success: true,
-          message: "Logged in successfully. ",
+          message: "Logged in successfully.",
           data: token,
-          user:userExistence
+          user: userExistence,
         });
     } else {
       return res.status(401).json({
         success: false,
-        message: "password is not correct",
+        message: "Password is not correct",
       });
     }
   } catch (error) {
     return res.status(500).json({
       success: false,
-      message: "log in failed.",
+      message: "Log in failed.",
+      error: error.message,
     });
   }
 };
