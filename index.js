@@ -24,17 +24,12 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(
     cors({
-        origin: process.env.BASE_URL,
+        origin: "https://study-notion-six-eta.vercel.app",
         credentials: true,
+        methods: 'GET, POST, PUT, DELETE',
+        allowedHeaders: 'Content-Type',
     })
 );
-app.use((req, res, next) => {
-    res.header('Access-Control-Allow-Origin', 'https://study-notion-six-eta.vercel.app');
-    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
-    res.header('Access-Control-Allow-Headers', 'Content-Type');
-    next();
-  });
-
 app.use(
     fileUpload({
         useTempFiles: true,
